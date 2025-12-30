@@ -1,0 +1,6 @@
+{
+  "resource_group": "YOUR_RESOURCE_GROUP",
+  "dcr_name": "dcr-spire",
+  "template_file": "templates/dcr-spire-template.json",
+  "parameters_file": "parameters/dcr/dcr-spire-parameters.json"
+}

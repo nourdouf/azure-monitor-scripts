@@ -1,0 +1,15 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "dataCollectionRuleName": {
+      "value": "dcr-spire"
+    },
+    "location": {
+      "value": "eastus"
+    },
+    "workspaceResourceId": {
+      "value": "/subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/YOUR_RESOURCE_GROUP/providers/Microsoft.OperationalInsights/workspaces/YOUR_WORKSPACE_NAME"
+    }
+  }
+}

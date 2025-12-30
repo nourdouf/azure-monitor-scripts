@@ -1,0 +1,56 @@
+{
+  "columns": [
+    {
+      "name": "TimeGenerated",
+      "type": "datetime"
+    },
+    {
+      "name": "timestamp",
+      "type": "datetime"
+    },
+    {
+      "name": "hostname",
+      "type": "string"
+    },
+    {
+      "name": "gh_approle",
+      "type": "string"
+    },
+    {
+      "name": "gh_role",
+      "type": "string"
+    },
+    {
+      "name": "gh_env",
+      "type": "string"
+    },
+    {
+      "name": "site",
+      "type": "string"
+    },
+    {
+      "name": "stamp",
+      "type": "string"
+    },
+    {
+      "name": "severity_text",
+      "type": "string"
+    },
+    {
+      "name": "syslog_identifier",
+      "type": "string"
+    },
+    {
+      "name": "syslog_facility",
+      "type": "string"
+    },
+    {
+      "name": "process_command_line",
+      "type": "string"
+    },
+    {
+      "name": "log",
+      "type": "dynamic"
+    }
+  ]
+}

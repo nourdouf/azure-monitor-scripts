@@ -1,0 +1,190 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "dataCollectionRuleName": {
+      "type": "string",
+      "defaultValue": "dcr-spire",
+      "metadata": {
+        "description": "Name of the Data Collection Rule"
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Region for the DCR (must match workspace region)"
+      }
+    },
+    "workspaceResourceId": {
+      "type": "string",
+      "metadata": {
+        "description": "Full resource ID of the Log Analytics workspace"
+      }
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Insights/dataCollectionRules",
+      "apiVersion": "2023-03-11",
+      "name": "[parameters('dataCollectionRuleName')]",
+      "location": "[parameters('location')]",
+      "kind": "Direct",
+      "properties": {
+        "streamDeclarations": {
+          "Custom-logs_CL": {
+            "columns": [
+              {
+                "name": "TimeGenerated",
+                "type": "datetime"
+              },
+              {
+                "name": "timestamp",
+                "type": "datetime"
+              },
+              {
+                "name": "hostname",
+                "type": "string"
+              },
+              {
+                "name": "gh_approle",
+                "type": "string"
+              },
+              {
+                "name": "gh_role",
+                "type": "string"
+              },
+              {
+                "name": "gh_env",
+                "type": "string"
+              },
+              {
+                "name": "site",
+                "type": "string"
+              },
+              {
+                "name": "stamp",
+                "type": "string"
+              },
+              {
+                "name": "PRIORITY",
+                "type": "string"
+              },
+              {
+                "name": "SYSLOG_IDENTIFIER",
+                "type": "string"
+              },
+              {
+                "name": "SYSLOG_FACILITY",
+                "type": "string"
+              },
+              {
+                "name": "CMDLINE",
+                "type": "string"
+              },
+              {
+                "name": "time",
+                "type": "string"
+              },
+              {
+                "name": "log",
+                "type": "dynamic"
+              }
+            ]
+          },
+          "Custom-logs_aux_CL": {
+            "columns": [
+              {
+                "name": "TimeGenerated",
+                "type": "datetime"
+              },
+              {
+                "name": "timestamp",
+                "type": "datetime"
+              },
+              {
+                "name": "hostname",
+                "type": "string"
+              },
+              {
+                "name": "gh_approle",
+                "type": "string"
+              },
+              {
+                "name": "gh_role",
+                "type": "string"
+              },
+              {
+                "name": "gh_env",
+                "type": "string"
+              },
+              {
+                "name": "site",
+                "type": "string"
+              },
+              {
+                "name": "stamp",
+                "type": "string"
+              },
+              {
+                "name": "PRIORITY",
+                "type": "string"
+              },
+              {
+                "name": "SYSLOG_IDENTIFIER",
+                "type": "string"
+              },
+              {
+                "name": "SYSLOG_FACILITY",
+                "type": "string"
+              },
+              {
+                "name": "CMDLINE",
+                "type": "string"
+              },
+              {
+                "name": "time",
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "destinations": {
+          "logAnalytics": [
+            {
+              "workspaceResourceId": "[parameters('workspaceResourceId')]",
+              "name": "log-analytics-spire"
+            }
+          ]
+        },
+        "dataFlows": [
+          {
+            "streams": [
+              "Custom-logs_CL"
+            ],
+            "destinations": [
+              "log-analytics-spire"
+            ],
+            "transformKql": "source | extend timestamp = todatetime(['time']) | extend gh_approle = gh_approle | extend severity_text = tostring(PRIORITY) | extend syslog_identifier = tostring(SYSLOG_IDENTIFIER) | extend syslog_facility = tostring(SYSLOG_FACILITY) | extend process_command_line = tostring(CMDLINE) | project-away PRIORITY, SYSLOG_IDENTIFIER, SYSLOG_FACILITY, CMDLINE, ['time']",
+            "outputStream": "Custom-logs_CL"
+          },
+          {
+            "streams": [
+              "Custom-logs_CL"
+            ],
+            "destinations": [
+              "log-analytics-spire"
+            ],
+            "transformKql": "source | extend timestamp = todatetime(['time']) | extend gh_approle = gh_approle | extend severity_text = tostring(PRIORITY) | extend syslog_identifier = tostring(SYSLOG_IDENTIFIER) | extend syslog_facility = tostring(SYSLOG_FACILITY) | extend process_command_line = tostring(CMDLINE) | project-away PRIORITY, SYSLOG_IDENTIFIER, SYSLOG_FACILITY, CMDLINE, ['time'], log",
+            "outputStream": "Custom-logs_aux_CL"
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "dataCollectionRuleId": {
+      "type": "string",
+      "value": "[resourceId('Microsoft.Insights/dataCollectionRules', parameters('dataCollectionRuleName'))]"
+    }
+  }
+}
