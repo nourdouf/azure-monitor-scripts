@@ -1,6 +1,7 @@
 {
   "resource_group": "YOUR_RESOURCE_GROUP",
   "dcr_name": "dcr-spire",
+  "location": "eastus",
   "template_file": "templates/dcr-spire-template.json",
-  "parameters_file": "parameters/dcr/dcr-spire-parameters.json"
+  "workspace_resource_id": "/subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/YOUR_RESOURCE_GROUP/providers/Microsoft.OperationalInsights/workspaces/YOUR_WORKSPACE_NAME"
 }

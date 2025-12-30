@@ -24,32 +24,62 @@ fi
 # Parse configuration
 RESOURCE_GROUP=$(jq -r '.resource_group' "$CONFIG_FILE")
 TEMPLATE_FILE=$(jq -r '.template_file' "$CONFIG_FILE")
-PARAMETERS_FILE=$(jq -r '.parameters_file' "$CONFIG_FILE")
 DCR_NAME=$(jq -r '.dcr_name' "$CONFIG_FILE")
+LOCATION=$(jq -r '.location' "$CONFIG_FILE")
+WORKSPACE_RESOURCE_ID=$(jq -r '.workspace_resource_id // "null"' "$CONFIG_FILE")
+SPIRE_WORKSPACE_RESOURCE_ID=$(jq -r '.spire_workspace_resource_id // "null"' "$CONFIG_FILE")
+GITRPCD_WORKSPACE_RESOURCE_ID=$(jq -r '.gitrpcd_workspace_resource_id // "null"' "$CONFIG_FILE")
 TRANSFORM_KQL=$(jq -r '.transform_kql // "null"' "$CONFIG_FILE")
 
 # Validate required fields
 if [ "$RESOURCE_GROUP" == "null" ] || [ "$TEMPLATE_FILE" == "null" ] || \
-   [ "$PARAMETERS_FILE" == "null" ] || [ "$DCR_NAME" == "null" ]; then
+   [ "$DCR_NAME" == "null" ] || [ "$LOCATION" == "null" ]; then
     echo "Error: Missing required fields in configuration file"
-    echo "Required: resource_group, template_file, parameters_file, dcr_name"
+    echo "Required: resource_group, template_file, dcr_name, location"
     exit 1
 fi
 
-# Check if template and parameters files exist
+# Check if template file exists
 if [ ! -f "$TEMPLATE_FILE" ]; then
     echo "Error: Template file '$TEMPLATE_FILE' not found"
     exit 1
 fi
 
-if [ ! -f "$PARAMETERS_FILE" ]; then
-    echo "Error: Parameters file '$PARAMETERS_FILE' not found"
-    exit 1
+# Build parameters JSON based on what's in the config
+PARAMS_JSON=$(jq -n \
+    --arg dcr_name "$DCR_NAME" \
+    --arg location "$LOCATION" \
+    '{
+        "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+        "contentVersion": "1.0.0.0",
+        "parameters": {
+            "dataCollectionRuleName": {"value": $dcr_name},
+            "location": {"value": $location}
+        }
+    }')
+
+# Add workspace parameters if present
+if [ "$WORKSPACE_RESOURCE_ID" != "null" ]; then
+    PARAMS_JSON=$(echo "$PARAMS_JSON" | jq --arg wrid "$WORKSPACE_RESOURCE_ID" \
+        '.parameters.workspaceResourceId = {"value": $wrid}')
 fi
 
-# Create temporary template file if transformation is provided
+if [ "$SPIRE_WORKSPACE_RESOURCE_ID" != "null" ]; then
+    PARAMS_JSON=$(echo "$PARAMS_JSON" | jq --arg wrid "$SPIRE_WORKSPACE_RESOURCE_ID" \
+        '.parameters.spireWorkspaceResourceId = {"value": $wrid}')
+fi
+
+if [ "$GITRPCD_WORKSPACE_RESOURCE_ID" != "null" ]; then
+    PARAMS_JSON=$(echo "$PARAMS_JSON" | jq --arg wrid "$GITRPCD_WORKSPACE_RESOURCE_ID" \
+        '.parameters.gitrpcdWorkspaceResourceId = {"value": $wrid}')
+fi
+
+# Create temporary files
 TEMP_TEMPLATE_FILE=$(mktemp)
+TEMP_PARAMS_FILE=$(mktemp)
+
 cp "$TEMPLATE_FILE" "$TEMP_TEMPLATE_FILE"
+echo "$PARAMS_JSON" > "$TEMP_PARAMS_FILE"
 
 if [ "$TRANSFORM_KQL" != "null" ]; then
     echo "Applying custom KQL transformation..."
@@ -59,16 +89,16 @@ if [ "$TRANSFORM_KQL" != "null" ]; then
         "$TEMP_TEMPLATE_FILE" > "$TEMP_TEMPLATE_FILE.tmp" && mv "$TEMP_TEMPLATE_FILE.tmp" "$TEMP_TEMPLATE_FILE"
 fi
 
-# Trap to cleanup temp file on exit
-trap "rm -f $TEMP_TEMPLATE_FILE" EXIT
+# Trap to cleanup temp files on exit
+trap "rm -f $TEMP_TEMPLATE_FILE $TEMP_PARAMS_FILE" EXIT
 
 echo "=========================================="
 echo "Data Collection Rule Deployment"
 echo "=========================================="
 echo "Resource Group: $RESOURCE_GROUP"
 echo "DCR Name: $DCR_NAME"
+echo "Location: $LOCATION"
 echo "Template File: $TEMPLATE_FILE"
-echo "Parameters File: $PARAMETERS_FILE"
 if [ "$TRANSFORM_KQL" != "null" ]; then
     echo "Custom Transformation: Yes"
 fi
@@ -95,7 +125,7 @@ echo "Deploying ARM template..."
 DEPLOYMENT_OUTPUT=$(az deployment group create \
     --resource-group "$RESOURCE_GROUP" \
     --template-file "$TEMP_TEMPLATE_FILE" \
-    --parameters @"$PARAMETERS_FILE" \
+    --parameters @"$TEMP_PARAMS_FILE" \
     --output json)
 
 if [ $? -eq 0 ]; then
