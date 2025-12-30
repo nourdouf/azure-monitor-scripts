@@ -12,7 +12,7 @@ Reusable scripts for managing Azure Monitor Log Analytics custom tables and Data
 
 1. **Clone and setup:**
    ```bash
-   git clone <repo-url>
+   git clone https://github.com/nourdouf/azure-monitor-scripts.git
    cd azure-monitor-scripts
 
    # Copy example configs
