@@ -2,9 +2,10 @@
   "subscription_id": "YOUR_SUBSCRIPTION_ID",
   "resource_group": "YOUR_RESOURCE_GROUP",
   "workspace_name": "YOUR_WORKSPACE_NAME",
-  "table_name": "logs_aux_CL",
+  "table_name": "logs_CL",
   "api_version": "2025-07-01",
-  "schema_file": "schemas/logs_aux_CL_schema.json",
-  "plan": "Auxiliary",
-  "total_retention_in_days": 365
+  "schema_file": "table/schemas/logs_CL_schema.json",
+  "plan": "Analytics",
+  "retention_in_days": 4,
+  "total_retention_in_days": 730
 }

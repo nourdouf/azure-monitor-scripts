@@ -16,8 +16,8 @@ Reusable scripts for managing Azure Monitor Log Analytics custom tables and Data
    cd azure-monitor-scripts
 
    # Copy example configs
-   cp parameters/table/logs_CL_config.example.json parameters/table/logs_CL_config.json
-   cp parameters/dcr/dcr-spire-config.example.json parameters/dcr/dcr-spire-config.json
+   cp table/configs/logs_CL_config.example.json table/configs/logs_CL_config.json
+   cp dcr/configs/dcr-spire-config.example.json dcr/configs/dcr-spire-config.json
    ```
 
 2. **Edit configs** - Replace placeholders with your Azure values:
@@ -27,24 +27,44 @@ Reusable scripts for managing Azure Monitor Log Analytics custom tables and Data
 
 3. **Create a table:**
    ```bash
-   ./create-log-analytics-table.sh parameters/table/logs_CL_config.json
+   ./create-log-analytics-table.sh table/configs/logs_CL_config.json
    ```
 
 4. **Create a DCR:**
    ```bash
-   ./create-dcr.sh parameters/dcr/dcr-spire-config.json
+   ./create-dcr.sh dcr/configs/dcr-spire-config.json
    ```
+
+## Repository Structure
+
+```
+.
+├── create-log-analytics-table.sh  # Script to create/update tables
+├── create-dcr.sh                  # Script to create/update DCRs
+├── table/
+│   ├── configs/                   # Table configuration files
+│   │   ├── *.example.json         # Example configs (committed)
+│   │   └── *.json                 # Your configs (gitignored)
+│   └── schemas/                   # Table schema definitions
+│       └── *.json
+└── dcr/
+    ├── configs/                   # DCR configuration files
+    │   ├── *.example.json         # Example configs (committed)
+    │   └── *.json                 # Your configs (gitignored)
+    └── templates/                 # ARM templates for DCRs
+        └── *.json
+```
 
 ## Configuration Files
 
-### Table Config (`parameters/table/*.json`)
+### Table Config (`table/configs/*.json`)
 ```json
 {
   "subscription_id": "YOUR_SUBSCRIPTION_ID",
   "resource_group": "YOUR_RESOURCE_GROUP",
   "workspace_name": "YOUR_WORKSPACE_NAME",
   "table_name": "logs_CL",
-  "schema_file": "schemas/logs_CL_schema.json",
+  "schema_file": "table/schemas/logs_CL_schema.json",
   "plan": "Analytics",
   "retention_in_days": 30,
   "total_retention_in_days": 90
@@ -55,18 +75,18 @@ Reusable scripts for managing Azure Monitor Log Analytics custom tables and Data
 - `Analytics` - Standard plan with full query capabilities and dynamic columns
 - `Auxiliary` - Low-cost archival plan (no dynamic columns)
 
-### DCR Config (`parameters/dcr/*.json`)
+### DCR Config (`dcr/configs/*.json`)
 ```json
 {
   "resource_group": "YOUR_RESOURCE_GROUP",
   "dcr_name": "dcr-name",
   "location": "eastus",
-  "template_file": "templates/dcr-template.json",
+  "template_file": "dcr/templates/dcr-template.json",
   "workspace_resource_id": "/subscriptions/YOUR_SUBSCRIPTION_ID/resourceGroups/YOUR_RESOURCE_GROUP/providers/Microsoft.OperationalInsights/workspaces/YOUR_WORKSPACE_NAME"
 }
 ```
 
-### Schema File (`schemas/*.json`)
+### Schema File (`table/schemas/*.json`)
 ```json
 {
   "columns": [

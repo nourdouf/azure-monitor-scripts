@@ -1,7 +1,7 @@
-# Ignore actual parameter files with real values
-parameters/table/*.json
-parameters/dcr/*.json
+# Ignore actual config files with real values
+table/configs/*.json
+dcr/configs/*.json
 
 # Keep example files
-!parameters/table/*.example.json
-!parameters/dcr/*.example.json
+!table/configs/*.example.json
+!dcr/configs/*.example.json
